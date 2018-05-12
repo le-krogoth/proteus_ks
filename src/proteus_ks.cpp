@@ -111,7 +111,11 @@ void update()
                 break;
         }
 
+        // give the user time to read
+        delay(3000);
+
         Serial.println("Update sketch...");
+        printScreen("Checking FW");
 
         String sUpdateFile = OTA_SERVER.c_str();
         sUpdateFile += "fw/v2";
@@ -133,5 +137,8 @@ void update()
                 Serial.println("HTTP_UPDATE_OK");
                 break;
         }
+
+        // give the user time to read
+        delay(3000);
     }
 }
