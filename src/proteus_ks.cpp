@@ -33,6 +33,13 @@ void setup()
     Serial.setDebugOutput(true);
     delay(10);
 
+    u8g2.begin();
+    u8g2.clearDisplay();
+    u8g2.setFont(u8g2_font_logisoso32_tf);
+    u8g2.setFontMode(0);    // enable transparent mode, which is faster
+
+    printScreen("welcome");
+
     Serial.print("Proteus KS ");
     Serial.print(VERSION.c_str());
     Serial.println(" booting up");
@@ -66,7 +73,7 @@ void printScreen(std::string message)
     do {
 
         u8g2.drawUTF8(0,10,"Proteus KS");
-        u8g2.drawUTF8(100,10,VERSION.c_str());
+        u8g2.drawUTF8(80,10,VERSION.c_str());
 
         u8g2.drawUTF8(0,30,message.c_str());
 
