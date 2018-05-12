@@ -38,9 +38,10 @@ static const std::string SSID = "proteus_ks";
 static const std::string PSK = "proteus.abcd";
 
 // make sure to end with a /
-static const std::string OTA_SERVER = "http://192.168.4.4/";
+static const std::string OTA_SERVER = "http://192.168.4.4:8081/";
 
-bool bUpdated = false;
+bool bUpdatedSPIFFS = false;
+bool bUpdatedFW = false;
 
 
 void printScreen(std::string message);

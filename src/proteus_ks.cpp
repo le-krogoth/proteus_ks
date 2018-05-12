@@ -58,10 +58,9 @@ void setup()
 // ------------------------------------------------------------------
 void loop()
 {
-    if(!bUpdated)
-    {
-        update();
-    }
+    printScreen(".");
+
+    update();
 
     delay(1000);
 }
@@ -83,62 +82,70 @@ void printScreen(std::string message)
 void update()
 {
     // wait for WiFi connection
-    if((WiFi.status() == WL_CONNECTED)) {
+    if((WiFi.status() == WL_CONNECTED))
+    {
+        if(!bUpdatedSPIFFS)
+        {
+            printScreen("Checking SPIFFS");
 
-        printScreen("Checking SPIFFS");
+            Serial.println("Update SPIFFS...");
 
-        Serial.println("Update SPIFFS...");
+            String sSpiffsFile = OTA_SERVER.c_str();
+            sSpiffsFile += "spiffs/file";
 
-        String sSpiffsFile = OTA_SERVER.c_str();
-        sSpiffsFile += "spiffs/file";
+            t_httpUpdate_return retS = ESPhttpUpdate.updateSpiffs(sSpiffsFile);
+            switch(retS) {
+                case HTTP_UPDATE_FAILED:
+                    printScreen("SPIFFS update failed");
+                    Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+                    break;
 
-        t_httpUpdate_return retS = ESPhttpUpdate.updateSpiffs(sSpiffsFile);
-        switch(retS) {
-            case HTTP_UPDATE_FAILED:
-                printScreen("SPIFFS update failed");
-                Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-                break;
+                case HTTP_UPDATE_NO_UPDATES:
+                    printScreen("SPIFFS, no update");
+                    Serial.println("HTTP_UPDATE_NO_UPDATES");
+                    break;
 
-            case HTTP_UPDATE_NO_UPDATES:
-                printScreen("SPIFFS, no update");
-                Serial.println("HTTP_UPDATE_NO_UPDATES");
-                break;
+                case HTTP_UPDATE_OK:
+                    printScreen("SPIFFS updated");
+                    Serial.println("HTTP_UPDATE_OK");
+                    bUpdatedSPIFFS = true;
+                    break;
+            }
 
-            case HTTP_UPDATE_OK:
-                printScreen("SPIFFS updated");
-
-                Serial.println("HTTP_UPDATE_OK");
-                break;
+            // give the user time to read
+            delay(3000);
         }
 
-        // give the user time to read
-        delay(3000);
+        if(!bUpdatedFW)
+        {
+            Serial.println("Update sketch...");
+            printScreen("Checking FW");
 
-        Serial.println("Update sketch...");
-        printScreen("Checking FW");
+            String sUpdateFile = OTA_SERVER.c_str();
+            sUpdateFile += "fw/v2";
 
-        String sUpdateFile = OTA_SERVER.c_str();
-        sUpdateFile += "fw/v2";
+            t_httpUpdate_return retFW = ESPhttpUpdate.update(sUpdateFile);
+            switch (retFW) {
+                case HTTP_UPDATE_FAILED:
+                    printScreen("FW update failed");
+                    Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s", ESPhttpUpdate.getLastError(),
+                                  ESPhttpUpdate.getLastErrorString().c_str());
+                    break;
 
-        t_httpUpdate_return retFW = ESPhttpUpdate.update(sUpdateFile);
-        switch(retFW) {
-            case HTTP_UPDATE_FAILED:
-                printScreen("FW update failed");
-                Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-                break;
+                case HTTP_UPDATE_NO_UPDATES:
+                    printScreen("FW, no update");
+                    Serial.println("HTTP_UPDATE_NO_UPDATES");
+                    break;
 
-            case HTTP_UPDATE_NO_UPDATES:
-                printScreen("FW, no update");
-                Serial.println("HTTP_UPDATE_NO_UPDATES");
-                break;
+                case HTTP_UPDATE_OK:
+                    printScreen("FW updated, reboot me now");
+                    Serial.println("HTTP_UPDATE_OK");
+                    bUpdatedFW = true;
+                    break;
+            }
 
-            case HTTP_UPDATE_OK:
-                printScreen("FW updated, reboot me now");
-                Serial.println("HTTP_UPDATE_OK");
-                break;
+            // give the user time to read
+            delay(3000);
         }
-
-        // give the user time to read
-        delay(3000);
     }
 }
